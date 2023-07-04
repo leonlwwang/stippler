@@ -1,11 +1,15 @@
 import { Delaunay } from 'd3-delaunay';
 import './style.css'
 
+const stippler = document.createElement("canvas");
+stippler.id = "stippler";
 const canvas = document.getElementById("stippler") as HTMLCanvasElement;
 const context = canvas!.getContext("2d");
-const WIDTH = 750;
-const DENSITY = 15;
-const SHARPNESS = 100;
+
+const IMG_WIDTH = 750;
+const PT_WIDTH = 0.5;
+const DENSITY = 17;
+const SHARPNESS = 200;
 
 function resize(image: HTMLImageElement, width: number): { width: number, height: number } {
     const height = Math.round(width * image.height / image.width);
@@ -14,24 +18,46 @@ function resize(image: HTMLImageElement, width: number): { width: number, height
     return { width: width, height: height }
 }
 
-function drawVoronoi(context: CanvasRenderingContext2D, points: Float64Array, width: number, height: number) {
+function drawVoronoi(context: CanvasRenderingContext2D, points: Float64Array, width: number, height: number): string {
+    let svgPath = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\
+                   <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + width + '" height="' + height + '">\
+                   <path d="';
     context.fillStyle = "#FFEEDF";
     context.fillRect(0, 0, width, height);
     context.beginPath();
     for (let i = 0, n = points.length; i < n; i += 2) {
       const x = points[i], y = points[i + 1];
+      svgPath += 'M' + x + ',' + y + ' ';
+      svgPath += 'm-' + PT_WIDTH + ',0 ';
+      svgPath += 'a' + PT_WIDTH + ',' + PT_WIDTH + ' 0 1,0 ' + PT_WIDTH * 2 + ',0 ';
+      svgPath += 'a' + PT_WIDTH + ',' + PT_WIDTH + ' 0 1,0 -' + PT_WIDTH * 2 + ',0 ';
       context.moveTo(x + 1.5, y);
-      context.arc(x, y, 1, 0, 2 * Math.PI);
+      context.arc(x, y, PT_WIDTH, 0, 2 * Math.PI);
     }
     context.fillStyle = "#000";
     context.fill();
-}  
+    svgPath += '" fill="black" stroke="black"/>\
+                </svg>'
+    return svgPath;
+}
+
+function createSvgDownload(svgPath: string, filename: string): void {
+    const blob = new Blob([svgPath], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+
+    URL.revokeObjectURL(url);
+}
 
 const image = new Image();
-image.src = "profile-c.jpg";
+image.src = "profile-cc.jpg";
 image.onload = () => {
     // resize and load image data
-    const { width, height } = resize(image, WIDTH);
+    const { width, height } = resize(image, IMG_WIDTH);
     context!.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
     const { data: rgba } = context!.getImageData(0, 0, width, height);
     const data = new Float64Array(width * height);
@@ -80,6 +106,10 @@ image.onload = () => {
 
         voronoi.update();
     }
-    console.log(voronoi);
-    drawVoronoi(context!, points, width, height);
+    const svgPath = drawVoronoi(context!, points, width, height);
+    console.log(svgPath);
+    // trigger download
+    if (false) {
+        createSvgDownload(svgPath, "passive.svg");
+    }
 }
