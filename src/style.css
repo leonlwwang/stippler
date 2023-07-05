@@ -15,7 +15,12 @@
   -webkit-text-size-adjust: 100%;
 }
 
-#stippler, #passive, #active {
+#stippling {
+  display: block;
+  margin: 0 auto;
+}
+
+.passive {
   display: block;
   margin: 0 auto;
 }

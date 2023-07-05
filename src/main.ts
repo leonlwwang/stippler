@@ -1,16 +1,50 @@
+/**
+ * @file main.ts
+ * @author Mike Bostock
+ * @author Leon Wang
+ * A modified version of Mike Bostock's weighted voronoi stippling.
+ * 
+ * Copyright (c) 2018-2020 Mike Bostock
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any
+   purpose with or without fee is hereby granted, provided that the above
+   copyright notice and this permission notice appear in all copies.
+   
+   THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+ * https://observablehq.com/@mbostock/voronoi-stippling
+ */
+
 import { Delaunay } from 'd3-delaunay';
 import './style.css'
 
+// initialize canvas element for the output
 const stippler = document.createElement("canvas");
 stippler.id = "stippler";
+document.body.appendChild(stippler);
 const canvas = document.getElementById("stippler") as HTMLCanvasElement;
 const context = canvas!.getContext("2d");
 
+// adjustable global values
 const IMG_WIDTH = 750;
 const PT_WIDTH = 0.5;
 const DENSITY = 17;
 const SHARPNESS = 200;
+const DRAW = true;
+const DOWNLOAD = false;
 
+/**
+ * Rescales the image input and the canvas.
+ * @param image the input image
+ * @param width the desired width to scale to
+ * @returns the scaled width and height of the image
+ */
 function resize(image: HTMLImageElement, width: number): { width: number, height: number } {
     const height = Math.round(width * image.height / image.width);
     context!.canvas.width = width;
@@ -18,30 +52,72 @@ function resize(image: HTMLImageElement, width: number): { width: number, height
     return { width: width, height: height }
 }
 
-function drawVoronoi(context: CanvasRenderingContext2D, points: Float64Array, width: number, height: number): string {
-    let svgPath = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\
-                   <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + width + '" height="' + height + '">\
-                   <path d="';
-    context.fillStyle = "#FFEEDF";
-    context.fillRect(0, 0, width, height);
-    context.beginPath();
+/**
+ * Builds a raw string .svg path of the stippling, and formats the path as a 
+   downloadable .svg file if the DOWNLOAD boolean flag is set to true.
+ * @param context the canvas to render the stippling on
+ * @param points the points of the stippling
+ * @param width the width of the image
+ * @param height the height of the image
+ * @returns the svg path of the stippling as a raw string
+ */
+function createStipplingPath(points: Float64Array, width: number, height: number): string {
+    let svgPath = '';
+
+    // for every iteration, draws a point and adds the point to the .svg path
     for (let i = 0, n = points.length; i < n; i += 2) {
       const x = points[i], y = points[i + 1];
       svgPath += 'M' + x + ',' + y + ' ';
       svgPath += 'm-' + PT_WIDTH + ',0 ';
       svgPath += 'a' + PT_WIDTH + ',' + PT_WIDTH + ' 0 1,0 ' + PT_WIDTH * 2 + ',0 ';
       svgPath += 'a' + PT_WIDTH + ',' + PT_WIDTH + ' 0 1,0 -' + PT_WIDTH * 2 + ',0 ';
+    }
+
+    // download trigger
+    if (DOWNLOAD) {
+        createSvgDownload(svgPath, "passive.svg", width, height, "black");
+    }
+    return svgPath;
+}
+
+/**
+ * Draws the stippling onto the canvas.
+ * @param context the canvas to render the stippling on
+ * @param points the points of the stippling
+ * @param width the width of the image
+ * @param height the height of the image
+ */
+function drawStippling(context: CanvasRenderingContext2D, points: Float64Array, width: number, height: number): void {
+    context.fillStyle = "#FFEEDF";
+    context.fillRect(0, 0, width, height);
+    context.beginPath();
+
+    // for every iteration, draws a point and adds the point to the .svg path
+    for (let i = 0, n = points.length; i < n; i += 2) {
+      const x = points[i], y = points[i + 1];
       context.moveTo(x + 1.5, y);
       context.arc(x, y, PT_WIDTH, 0, 2 * Math.PI);
     }
     context.fillStyle = "#000";
     context.fill();
-    svgPath += '" fill="black" stroke="black"/>\
-                </svg>'
-    return svgPath;
 }
 
-function createSvgDownload(svgPath: string, filename: string): void {
+/**
+ * Takes a raw .svg string and writes it to a .svg file to download.
+ * @param svgPath the raw .svg string
+ * @param filename the name of the downloaded file
+ * @param width the width of the image
+ * @param height the height of the image
+ * @param color the color of the points
+ */
+function createSvgDownload(svgPath: string, filename: string, width: number, height: number, color: string): void {
+    let header = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\
+                   <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + width + '" height="' + height + '">\
+                   <path d="';
+    let footer = '" fill="' + color + '" stroke="' + color + '"/>\
+                   </svg>';
+    svgPath = header + svgPath + footer;
+
     const blob = new Blob([svgPath], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
 
@@ -58,7 +134,7 @@ image.src = "profile-cc.jpg";
 image.onload = () => {
     // resize and load image data
     const { width, height } = resize(image, IMG_WIDTH);
-    context!.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
+    // context!.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
     const { data: rgba } = context!.getImageData(0, 0, width, height);
     const data = new Float64Array(width * height);
     for (let i = 0, n = rgba.length / 4; i < n; ++i) data[i] = Math.max(0, 1 - rgba[i * 4] / 254);
@@ -106,10 +182,11 @@ image.onload = () => {
 
         voronoi.update();
     }
-    const svgPath = drawVoronoi(context!, points, width, height);
+
+    const svgPath = createStipplingPath(points, width, height);
     console.log(svgPath);
-    // trigger download
-    if (false) {
-        createSvgDownload(svgPath, "passive.svg");
+    // draw trigger
+    if (DRAW) {
+        drawStippling(context!, points, width, height);
     }
 }

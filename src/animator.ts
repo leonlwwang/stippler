@@ -1,24 +1,56 @@
 import './style.css'
+import { ACTIVE, PASSIVE } from './cache'
 
-async function addSVG(fname: string, id: string): Promise<void> {
-    // fetch svg data and load into svg element
+/**
+ * Loads a local .svg file onto the DOM.
+ * @param fname file path
+ * @param func callback function
+ */
+async function drawSVG(fname: string, func: Function | null): Promise<void> {
     const f = await fetch(fname).then(response => response.text());
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.innerHTML = f;
 
-    // adjust svg dimensions
-    const svgContent = svg.querySelector("svg");
-    const svgWidth = svgContent!.getAttribute("width");
-    const svgHeight = svgContent!.getAttribute("height");
-    svg.setAttribute("width", svgWidth!);
-    svg.setAttribute("height", svgHeight!);
+    // Create a temporary div element to parse the SVG content
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = f;
+  
+    // Extract the inner SVG element
+    const innerSvg = tempDiv.querySelector("svg");
+  
+    // Assign ID and adjust dimensions
+    innerSvg!.id = "stippling";
+    const svgWidth = innerSvg!.getAttribute("width");
+    const svgHeight = innerSvg!.getAttribute("height");
+    innerSvg!.setAttribute("width", svgWidth!);
+    innerSvg!.setAttribute("height", svgHeight!);
+  
+    // Give path element a CSS class
+    const pathElement = innerSvg!.querySelector("path");
+    pathElement!.id = "stippling-passive";
+  
+    // Append the inner SVG element to the document body
+    document.body.appendChild(innerSvg!);
 
-    // append the element to the DOM
-    const container = document.createElement("div");
-    container.id = id;
-    container.appendChild(svg);
-    document.body.appendChild(container);
+    // callback
+    if (func) {
+        func();
+    }
 }
 
-// addSVG("svg/passive.svg", "passive");
-addSVG("svg/active.svg", "active");
+/**
+ * Animate the stippling.
+ */
+function animate(): void {
+    const animate = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+    animate.id = "stippling-active";
+    animate.setAttribute("dur", "5s");
+    animate.setAttribute("repeatCount", "infinite");
+    animate.setAttribute("attributeName", "d");
+    animate.setAttribute("values", PASSIVE + ';' + ACTIVE + ';' + ACTIVE);
+    animate.setAttribute("fill", "freeze");
+    animate.setAttribute("calcMode", "spline");
+    animate.setAttribute("keySplines", "0.4 0 0.2 1; 0.4 0 0.2 1");
+    const path = document.getElementById("stippling-passive");
+    path!.appendChild(animate);
+}
+
+drawSVG("svg/passive.svg", () => animate());
