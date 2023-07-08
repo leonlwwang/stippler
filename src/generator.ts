@@ -1,5 +1,5 @@
 /**
- * @file main.ts
+ * @file generator.ts
  * @author Mike Bostock
  * @author Leon Wang
  * A modified version of Mike Bostock's weighted voronoi stippling.
