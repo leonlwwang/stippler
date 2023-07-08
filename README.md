@@ -1,6 +1,18 @@
-# `Animated Stippling`
+# `Animated Stippling [α]`
+
+⛔ **This is an alpha version, it is not performant enough to render fluently or efficiently on the browser yet.**
 
 Taking an implementation of [voronoi stippling](https://observablehq.com/@mbostock/voronoi-stippling) and using SVG morphing to animate it. Using the [`d3-delaunay`](https://github.com/d3/d3-delaunay) library.
+
+Second iteration, using CSS animations and a scale of 500x500 with less detail and bezier curve [~40,000 points]:
+
+
+
+https://github.com/leonlwwang/stippler-alpha/assets/69338674/91b6945b-f711-496f-934d-1573f6218a30
+
+
+
+First iteration, using native SVG animations and a scale of 750x750 [~100,000 points]:
 
 
 
