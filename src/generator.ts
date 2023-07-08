@@ -32,10 +32,10 @@ const canvas = document.getElementById("stippler") as HTMLCanvasElement;
 const context = canvas!.getContext("2d");
 
 // adjustable global values
-const IMG_WIDTH = 750;
-const PT_WIDTH = 0.5;
+const IMG_WIDTH = 500;
+const PT_WIDTH = 1;
 const DENSITY = 17;
-const SHARPNESS = 200;
+const SHARPNESS = 100;
 const DRAW = true;
 const DOWNLOAD = false;
 
@@ -91,6 +91,7 @@ function drawStippling(context: CanvasRenderingContext2D, points: Float64Array, 
     context.fillStyle = "#FFEEDF";
     context.fillRect(0, 0, width, height);
     context.beginPath();
+    console.log(points.length);
 
     // for every iteration, draws a point and adds the point to the .svg path
     for (let i = 0, n = points.length; i < n; i += 2) {
@@ -134,7 +135,7 @@ image.src = "profile-cc.jpg";
 image.onload = () => {
     // resize and load image data
     const { width, height } = resize(image, IMG_WIDTH);
-    // context!.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
+    context!.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
     const { data: rgba } = context!.getImageData(0, 0, width, height);
     const data = new Float64Array(width * height);
     for (let i = 0, n = rgba.length / 4; i < n; ++i) data[i] = Math.max(0, 1 - rgba[i * 4] / 254);
