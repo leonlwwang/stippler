@@ -22,7 +22,7 @@
  */
 
 import { Delaunay } from 'd3-delaunay';
-import './style.css'
+import './global.css'
 
 // initialize canvas element for the output
 const stippler = document.createElement("canvas");

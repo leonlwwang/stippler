@@ -15,16 +15,6 @@
   -webkit-text-size-adjust: 100%;
 }
 
-#stippling {
-  display: block;
-  margin: 0 auto;
-}
-
-.passive {
-  display: block;
-  margin: 0 auto;
-}
-
 a {
   font-weight: 500;
   color: #646cff;
