@@ -2,7 +2,7 @@
 
 Taking an implementation of [voronoi stippling](https://observablehq.com/@mbostock/voronoi-stippling) and using SVG morphing to animate it. Using the [`d3-delaunay`](https://github.com/d3/d3-delaunay) library.
 
-Second iteration, using CSS animations and a scale of 500x500 with less detail and bezier curve [~40,000 points]:
+Second iteration, using CSS animations, a lower screen resolution, and a scale of 500x500 with less detail and bezier curve [~40,000 points]:
 
 
 
