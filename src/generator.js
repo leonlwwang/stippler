@@ -1,5 +1,5 @@
 /**
- * @file generator.ts
+ * @file generator.js
  * @author Mike Bostock
  * @author Leon Wang
  * A modified version of Mike Bostock's weighted voronoi stippling.
@@ -28,13 +28,13 @@ import './global.css'
 const stippler = document.createElement("canvas");
 stippler.id = "stippler";
 document.body.appendChild(stippler);
-const canvas = document.getElementById("stippler") as HTMLCanvasElement;
-const context = canvas!.getContext("2d");
+const canvas = document.getElementById("stippler");
+const context = canvas.getContext("2d");
 
 // adjustable global values
 const IMG_WIDTH = 500;
-const PT_WIDTH = 1;
-const DENSITY = 17;
+const PT_WIDTH = 1; // point width always looks smaller on the webpage vs downloaded svg
+const DENSITY = 17; // lower is more dense
 const SHARPNESS = 100;
 const DRAW = true;
 const DOWNLOAD = false;
@@ -45,10 +45,10 @@ const DOWNLOAD = false;
  * @param width the desired width to scale to
  * @returns the scaled width and height of the image
  */
-function resize(image: HTMLImageElement, width: number): { width: number, height: number } {
+function resize(image, width) {
     const height = Math.round(width * image.height / image.width);
-    context!.canvas.width = width;
-    context!.canvas.height = height;
+    context.canvas.width = width;
+    context.canvas.height = height;
     return { width: width, height: height }
 }
 
@@ -61,7 +61,7 @@ function resize(image: HTMLImageElement, width: number): { width: number, height
  * @param height the height of the image
  * @returns the svg path of the stippling as a raw string
  */
-function createStipplingPath(points: Float64Array, width: number, height: number): string {
+function createStipplingPath(points, width, height) {
     let svgPath = '';
 
     // for every iteration, draws a point and adds the point to the .svg path
@@ -87,7 +87,7 @@ function createStipplingPath(points: Float64Array, width: number, height: number
  * @param width the width of the image
  * @param height the height of the image
  */
-function drawStippling(context: CanvasRenderingContext2D, points: Float64Array, width: number, height: number): void {
+function drawStippling(context, points, width, height) {
     context.fillStyle = "#FFEEDF";
     context.fillRect(0, 0, width, height);
     context.beginPath();
@@ -111,7 +111,7 @@ function drawStippling(context: CanvasRenderingContext2D, points: Float64Array, 
  * @param height the height of the image
  * @param color the color of the points
  */
-function createSvgDownload(svgPath: string, filename: string, width: number, height: number, color: string): void {
+function createSvgDownload(svgPath, filename, width, height, color) {
     let header = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\
                    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + width + '" height="' + height + '">\
                    <path d="';
@@ -135,8 +135,9 @@ image.src = "profile-cc.jpg";
 image.onload = () => {
     // resize and load image data
     const { width, height } = resize(image, IMG_WIDTH);
-    context!.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
-    const { data: rgba } = context!.getImageData(0, 0, width, height);
+    // comment drawImage() out to generate the randomized points in a square
+    context.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
+    const { data: rgba } = context.getImageData(0, 0, width, height);
     const data = new Float64Array(width * height);
     for (let i = 0, n = rgba.length / 4; i < n; ++i) data[i] = Math.max(0, 1 - rgba[i * 4] / 254);
     const n = Math.round(width * height / DENSITY)
@@ -188,6 +189,6 @@ image.onload = () => {
     console.log(svgPath);
     // draw trigger
     if (DRAW) {
-        drawStippling(context!, points, width, height);
+        drawStippling(context, points, width, height);
     }
 }

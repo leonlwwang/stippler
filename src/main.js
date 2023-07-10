@@ -1,12 +1,12 @@
 import './global.css'
 import { ACTIVE, PASSIVE } from './cache'
 
-const ANIMATION_TIME: number = 1.66;
+const ANIMATION_TIME = 1.66;
 
 /**
  * Renders the idle, passive stippling path.
  */
-function idle(): void {
+function idle() {
     const css = document.createElement('style');
     const script = '\
                     svg path {\
@@ -23,14 +23,14 @@ function idle(): void {
                     }';
     css.innerHTML = script;
 
-    const pathElement = document.getElementById('stippling-passive') as HTMLElement;
+    const pathElement = document.getElementById('stippling-passive');
     pathElement.appendChild(css);
 }
 
 /**
  * Animates the stippling.
  */
-function animate(): HTMLStyleElement {
+function animate() {
     // Append CSS animation script to the path
     const css = document.createElement('style');
     const script = '\
@@ -54,6 +54,6 @@ function animate(): HTMLStyleElement {
 const animation = animate();
 idle();
 setTimeout(() => {
-    const pathElement = document.getElementById('stippling-passive') as HTMLElement;
+    const pathElement = document.getElementById('stippling-passive');
     pathElement.appendChild(animation);
 }, 500);
