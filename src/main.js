@@ -10,6 +10,7 @@ function idle() {
     const css = document.createElement('style');
     const script = '\
                     svg path {\
+                        will-change: d, animation;\
                         d:path("' + PASSIVE + '");\
                         animation: fade-in 0.5s;\
                     }\
@@ -56,4 +57,5 @@ idle();
 setTimeout(() => {
     const pathElement = document.getElementById('stippling-passive');
     pathElement.appendChild(animation);
+    pathElement.style.willChange = 'auto';
 }, 500);
