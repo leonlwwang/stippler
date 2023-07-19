@@ -1,7 +1,7 @@
 import './global.css'
 import { ACTIVE, PASSIVE } from './cache'
 
-const ANIMATION_TIME = 1.66;
+const ANIMATION_TIME = 1.5;
 
 /**
  * Renders the idle, passive stippling path.
@@ -12,7 +12,7 @@ function idle() {
                     svg path {\
                         will-change: d, animation;\
                         d:path("' + PASSIVE + '");\
-                        animation: fade-in 0.5s;\
+                        animation: fade-in 0.25s;\
                     }\
                     @keyframes fade-in {\
                         0% {\
@@ -58,4 +58,4 @@ setTimeout(() => {
     const pathElement = document.getElementById('stippling-passive');
     pathElement.appendChild(animation);
     pathElement.style.willChange = 'auto';
-}, 500);
+}, 250);
