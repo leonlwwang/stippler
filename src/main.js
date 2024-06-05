@@ -35,8 +35,8 @@ fileBtn.addEventListener('change', function() {
         context.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height);
         const imageData = context.getImageData(0, 0, width, height);
 
-        const passiveWorker = new Worker('src/worker.js', { type: 'module' });
-        const activeWorker = new Worker('src/worker.js', { type: 'module' });
+        const passiveWorker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+        const activeWorker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
 
         let passivePoints = null;
         let activePoints = null;

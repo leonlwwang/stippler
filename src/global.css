@@ -1,13 +1,13 @@
 @font-face {
   font-family: 'IBM Plex Mono';
-  src: url('/stippler/fonts/ibmplexmono.ttf') format('truetype');
+  src: url('/fonts/ibmplexmono.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'VT323';
-  src: url('/stippler/fonts/VT323.ttf') format('truetype');
+  src: url('/fonts/VT323.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
