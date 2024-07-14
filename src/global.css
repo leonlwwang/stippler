@@ -20,7 +20,7 @@
 
   color-scheme: light dark;
   color: #1a1a1a;
-  background-color: #FFEEDF;
+  background-color: #ffeedf;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -123,14 +123,14 @@ label {
   padding-right: 0.5rem;
   border: 1px;
   border-style: solid;
-  border-color: #2B2222;
+  border-color: #2b2222;
   display: flex;
   flex-direction: column;
   height: auto;
   justify-content: space-between;
   position: relative;
   background-size: 200% 100%;
-  background-image: linear-gradient(to right, #FFEEDF 49.8%, #2B2222 50%);
+  background-image: linear-gradient(to right, #ffeedf 49.8%, #2b2222 50%);
   -webkit-transition: background-position 1s;
   -moz-transition: background-position 1s;
   transition: background-position 1s;
@@ -177,23 +177,53 @@ p {
 }
 
 .loader {
-  --c:no-repeat linear-gradient(#1a1a1a 0 0);
-  background: 
-    var(--c),var(--c),var(--c),
-    var(--c),var(--c),var(--c),
-    var(--c),var(--c),var(--c);
+  --c: no-repeat linear-gradient(#1a1a1a 0 0);
+  background: var(--c), var(--c), var(--c), var(--c), var(--c), var(--c), var(--c), var(--c),
+    var(--c);
   background-size: 8px 8px;
-  animation: 
+  animation:
     l32-1 1s infinite,
     l32-2 1s infinite;
 }
 @keyframes l32-1 {
-  0%,100% {width:22.5px;height: 22.5px}
-  35%,65% {width:32.5px;height: 32.5px}
+  0%,
+  100% {
+    width: 22.5px;
+    height: 22.5px;
+  }
+  35%,
+  65% {
+    width: 32.5px;
+    height: 32.5px;
+  }
 }
 @keyframes l32-2 {
-  0%,40%  {background-position: 0 0,0 50%, 0 100%,50% 100%,100% 100%,100% 50%,100% 0,50% 0,  50% 50% }
-  60%,100%{background-position: 0 50%, 0 100%,50% 100%,100% 100%,100% 50%,100% 0,50% 0,0 0,  50% 50% }
+  0%,
+  40% {
+    background-position:
+      0 0,
+      0 50%,
+      0 100%,
+      50% 100%,
+      100% 100%,
+      100% 50%,
+      100% 0,
+      50% 0,
+      50% 50%;
+  }
+  60%,
+  100% {
+    background-position:
+      0 50%,
+      0 100%,
+      50% 100%,
+      100% 100%,
+      100% 50%,
+      100% 0,
+      50% 0,
+      0 0,
+      50% 50%;
+  }
 }
 
 @media (prefers-color-scheme: light) {
