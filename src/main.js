@@ -72,8 +72,19 @@ fileBtn.addEventListener('change', function () {
         stippler.style.display = 'block'
 
         // draw & animate
+        const distances = new Float64Array(passivePoints.length)
+        for (let i = 0, n = distances.length; i < n; i += 2) {
+          distances[i] = (activePoints[i] - passivePoints[i])
+          distances[i + 1] = (activePoints[i + 1] - passivePoints[i + 1])
+        }
         drawStipplingByPoint(passivePoints)
-        animate(performance.now(), 0)
+        animate(performance.now(), distances, 0, 0)
+
+        const replayIcon = document.createElement('object')
+        replayIcon.data = './refresh.svg'
+        replayIcon.type = 'image/svg+xml'
+        const replayer = document.createElement('div').appendChild(replayIcon)
+        document.body.insertBefore(replayer, report)
       }
     }
 
@@ -87,23 +98,25 @@ fileBtn.addEventListener('change', function () {
       }
     }
 
-    const duration = 20000
-    function animate(startTime, frameCount) {
+    const duration = 1500
+    function animate(startTime, distances, progress, frameCount) {
       const currentTime = performance.now()
-      const elapsedTime = currentTime - startTime
-      const progress = Math.min(elapsedTime / duration, 1)
+      const timeBetweenFrames = currentTime - startTime
+      const rate = timeBetweenFrames / duration
+      progress += rate
+      console.log(frameCount, timeBetweenFrames, progress)
 
       for (let i = 0, n = passivePoints.length; i < n; i += 2) {
-        passivePoints[i] = passivePoints[i] + (activePoints[i] - passivePoints[i]) * progress
+        passivePoints[i] = passivePoints[i] + (distances[i] * rate)
         passivePoints[i + 1] =
-          passivePoints[i + 1] + (activePoints[i + 1] - passivePoints[i + 1]) * progress
+          passivePoints[i + 1] + (distances[i + 1] * rate)
       }
       drawStipplingByPoint(passivePoints)
 
       if (progress < 1) {
-        requestAnimationFrame(() => animate(startTime, frameCount + 1))
+        requestAnimationFrame(() => animate(currentTime, distances, progress, frameCount + 1))
       } else {
-        console.log('animation complete')
+        console.log('animation completed with', frameCount, 'frames')
       }
     }
   }
