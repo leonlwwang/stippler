@@ -1,5 +1,7 @@
 import './global.css'
 
+let REPLAY = false
+
 const fileBtn = document.getElementById('file-btn')
 const imgForm = document.getElementById('image-form')
 
@@ -51,6 +53,7 @@ fileBtn.onchange = () => {
 
     blankImageWorker.onmessage = (event) => {
       points = event.data
+      cache = points.slice()
       checkCompletion()
     }
 
@@ -76,7 +79,6 @@ fileBtn.onchange = () => {
         stippler.style.display = 'block'
 
         console.log('animating...')
-        cache = points.slice()
         drawStippling(points)
         animateStippling(points, performance.now(), 0)
       }
@@ -109,17 +111,21 @@ fileBtn.onchange = () => {
         requestAnimationFrame(() => animateStippling(points, currentTime, progress))
       } else {
         console.log('animation completed')
-        replay()
+        REPLAY = true
       }
     }
 
-    const replay = () => {
-      document.addEventListener('click', (event) => {
-        if (event.target.id === 'stippler') {
-          // replay functionality here
-        }
-      })
+    const replayHandler = (event) => {
+      if (event.target.id === 'stippler' && REPLAY) {
+        REPLAY = false
+        console.log('replaying...')
+        points = cache.slice()
+        drawStippling(points)
+        animateStippling(points, performance.now(), 0)
+      }
     }
+
+    stippler.addEventListener('click', replayHandler)
   }
 }
 
