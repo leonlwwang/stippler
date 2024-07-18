@@ -43,6 +43,7 @@ fileBtn.onchange = () => {
 
     let points = null
     let distances = null
+    let cache = null
 
     const start = new Date()
     blankImageWorker.postMessage({ imageData: blankImageData, density: 10, sharpness: 100 })
@@ -75,14 +76,9 @@ fileBtn.onchange = () => {
         stippler.style.display = 'block'
 
         console.log('animating...')
+        cache = points.slice()
         drawStippling(points)
-        animateStippling(performance.now(), 0)
-
-        const replayIcon = document.createElement('object')
-        replayIcon.data = './refresh.svg'
-        replayIcon.type = 'image/svg+xml'
-        const replayer = document.createElement('div').appendChild(replayIcon)
-        document.body.insertBefore(replayer, report)
+        animateStippling(points, performance.now(), 0)
       }
     }
 
@@ -97,7 +93,7 @@ fileBtn.onchange = () => {
     }
 
     const duration = 1500
-    const animateStippling = (startTime, progress) => {
+    const animateStippling = (points, startTime, progress) => {
       const currentTime = performance.now()
       const timeBetweenFrames = currentTime - startTime
       const rate = timeBetweenFrames / duration
@@ -110,10 +106,19 @@ fileBtn.onchange = () => {
       drawStippling(points)
 
       if (progress < 1) {
-        requestAnimationFrame(() => animateStippling(currentTime, progress))
+        requestAnimationFrame(() => animateStippling(points, currentTime, progress))
       } else {
         console.log('animation completed')
+        replay()
       }
+    }
+
+    const replay = () => {
+      document.addEventListener('click', (event) => {
+        if (event.target.id === 'stippler') {
+          // replay functionality here
+        }
+      })
     }
   }
 }
