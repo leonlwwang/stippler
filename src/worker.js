@@ -1,24 +1,41 @@
 import { Delaunay } from 'd3-delaunay'
 
-self.onmessage = async function (event) {
+self.onmessage = async (event) => {
   const start = new Date()
-  console.log('voronoi worker started')
+  console.log('worker started')
 
   const { imageData, density, sharpness } = event.data
-  const points = await voronoi(imageData, density, sharpness)
+  const points = await generateVoronoiPoints(imageData, density, sharpness)
 
   const end = new Date()
-  console.log('voronoi worker finished in ' + (end - start) / 1000 + ' sec')
+  console.log('worker finished in ' + (end - start) / 1000 + ' sec')
 
   self.postMessage(points)
 }
 
-async function voronoi(imageData, density, sharpness) {
+const generateVoronoiPoints = async (imageData, density, sharpness) => {
   const { width, height, data: rgba } = imageData
-  const data = new Float64Array(width * height)
-  for (let i = 0, n = rgba.length / 4; i < n; ++i) data[i] = Math.max(0, 1 - rgba[i * 4] / 254)
-  const n = Math.round((width * height) / density)
+  const data = convertToGrayscale(rgba, width, height)
+  const points = generateRandomPoints(width, height, density, data)
 
+  const delaunay = new Delaunay(points)
+  const voronoi = delaunay.voronoi([0, 0, width, height])
+
+  refinePoints(points, data, width, height, sharpness, delaunay, voronoi)
+
+  return points
+}
+
+const convertToGrayscale = (rgba, width, height) => {
+  const data = new Float64Array(width * height)
+  for (let i = 0, n = rgba.length / 4; i < n; ++i) {
+    data[i] = Math.max(0, 1 - rgba[i * 4] / 254)
+  }
+  return data
+}
+
+const generateRandomPoints = (width, height, density, data) => {
+  const n = Math.round((width * height) / density)
   const points = new Float64Array(n * 2)
   for (let i = 0; i < n; ++i) {
     for (let j = 0; j < 50; ++j) {
@@ -27,10 +44,11 @@ async function voronoi(imageData, density, sharpness) {
       if (Math.random() < data[y * width + x]) break
     }
   }
+  return points
+}
 
-  const delaunay = new Delaunay(points)
-  const voronoi = delaunay.voronoi([0, 0, width, height])
-
+const refinePoints = (points, data, width, height, sharpness, delaunay, voronoi) => {
+  const n = points.length / 2
   const c = new Float64Array(n * 2)
   const s = new Float64Array(n)
 
@@ -59,5 +77,4 @@ async function voronoi(imageData, density, sharpness) {
 
     voronoi.update()
   }
-  return points
 }

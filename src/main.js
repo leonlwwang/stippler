@@ -1,15 +1,18 @@
 import './global.css'
 
+let REPLAY = false
+
 const fileBtn = document.getElementById('file-btn')
 const imgForm = document.getElementById('image-form')
-fileBtn.addEventListener('change', function () {
+
+fileBtn.onchange = () => {
   imgForm.remove()
 
   const image = new Image()
   const file = fileBtn.files[0]
   const reader = new FileReader()
   reader.readAsDataURL(file)
-  reader.onload = function () {
+  reader.onload = () => {
     image.src = reader.result
   }
 
@@ -29,55 +32,59 @@ fileBtn.addEventListener('change', function () {
   const canvas = document.getElementById('stippler')
   const context = canvas.getContext('2d', { willReadFrequently: true })
 
-  image.onload = function () {
+  image.onload = () => {
     const { width, height } = resize(context, image, 500)
     const blankImageData = context.getImageData(0, 0, width, height)
     context.drawImage(image, 0, 0, image.width, image.height, 0, 0, width, height)
-    const imageData = context.getImageData(0, 0, width, height)
+    const activeImageData = context.getImageData(0, 0, width, height)
 
-    const passiveWorker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })
-    const activeWorker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })
+    const blankImageWorker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })
+    const activeImageWorker = new Worker(new URL('./worker.js', import.meta.url), {
+      type: 'module',
+    })
 
-    let passivePoints = null
-    let activePoints = null
+    let points = null
+    let distances = null
+    let cache = null
 
     const start = new Date()
-    passiveWorker.postMessage({ imageData: blankImageData, density: 10, sharpness: 100 })
-    activeWorker.postMessage({ imageData, density: 10, sharpness: 100 })
+    blankImageWorker.postMessage({ imageData: blankImageData, density: 10, sharpness: 100 })
+    activeImageWorker.postMessage({ imageData: activeImageData, density: 10, sharpness: 100 })
 
-    passiveWorker.onmessage = function (event) {
-      passivePoints = event.data
+    blankImageWorker.onmessage = (event) => {
+      points = event.data
+      cache = points.slice()
       checkCompletion()
     }
 
-    activeWorker.onmessage = function (event) {
-      activePoints = event.data
+    activeImageWorker.onmessage = (event) => {
+      distances = event.data
       checkCompletion()
     }
 
-    function checkCompletion() {
-      if (passivePoints && activePoints) {
+    const checkCompletion = () => {
+      if (points && distances) {
+        for (let i = 0, n = distances.length; i < n; i += 2) {
+          distances[i] = distances[i] - points[i]
+          distances[i + 1] = distances[i + 1] - points[i + 1]
+        }
         const end = new Date()
         wrapper.remove()
 
         const report = document.createElement('p')
         report.textContent =
-          activePoints.length +
-          passivePoints.length +
-          ' points generated in ' +
-          (end - start) / 1000 +
-          ' sec'
+          distances.length + points.length + ' points generated in ' + (end - start) / 1000 + ' sec'
         document.body.insertBefore(report, handle)
 
         stippler.style.display = 'block'
 
-        // draw & animate
-        drawStipplingByPoint(passivePoints)
-        animate(performance.now(), 0)
+        console.log('animating...')
+        drawStippling(points)
+        animateStippling(points, performance.now(), 0)
       }
     }
 
-    function drawStipplingByPoint(points) {
+    const drawStippling = (points) => {
       context.clearRect(0, 0, width, height)
       context.fillStyle = 'black'
       for (let i = 0, n = points.length; i < n; i += 2) {
@@ -87,29 +94,42 @@ fileBtn.addEventListener('change', function () {
       }
     }
 
-    const duration = 20000
-    function animate(startTime, frameCount) {
+    const duration = 1500
+    const animateStippling = (points, startTime, progress) => {
       const currentTime = performance.now()
-      const elapsedTime = currentTime - startTime
-      const progress = Math.min(elapsedTime / duration, 1)
+      const timeBetweenFrames = currentTime - startTime
+      const rate = timeBetweenFrames / duration
+      progress += rate
 
-      for (let i = 0, n = passivePoints.length; i < n; i += 2) {
-        passivePoints[i] = passivePoints[i] + (activePoints[i] - passivePoints[i]) * progress
-        passivePoints[i + 1] =
-          passivePoints[i + 1] + (activePoints[i + 1] - passivePoints[i + 1]) * progress
+      for (let i = 0, n = points.length; i < n; i += 2) {
+        points[i] = points[i] + distances[i] * rate
+        points[i + 1] = points[i + 1] + distances[i + 1] * rate
       }
-      drawStipplingByPoint(passivePoints)
+      drawStippling(points)
 
       if (progress < 1) {
-        requestAnimationFrame(() => animate(startTime, frameCount + 1))
+        requestAnimationFrame(() => animateStippling(points, currentTime, progress))
       } else {
-        console.log('animation complete')
+        console.log('animation completed')
+        REPLAY = true
       }
     }
-  }
-})
 
-function resize(context, image, width) {
+    const replayHandler = (event) => {
+      if (event.target.id === 'stippler' && REPLAY) {
+        REPLAY = false
+        console.log('replaying...')
+        points = cache.slice()
+        drawStippling(points)
+        animateStippling(points, performance.now(), 0)
+      }
+    }
+
+    stippler.addEventListener('click', replayHandler)
+  }
+}
+
+const resize = (context, image, width) => {
   const height = Math.round((width * image.height) / image.width)
   context.canvas.width = width
   context.canvas.height = height
