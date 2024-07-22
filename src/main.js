@@ -1,4 +1,5 @@
 import './global.css'
+import { cubic } from './cubic'
 
 let REPLAY = false
 
@@ -84,6 +85,10 @@ fileBtn.onchange = () => {
       }
     }
 
+    const { x, y } = cubic(1, 0, 0, 1)
+    
+    const cubicBezier = (t) => y(t);
+
     const drawStippling = (points) => {
       context.clearRect(0, 0, width, height)
       context.fillStyle = 'black'
@@ -94,16 +99,18 @@ fileBtn.onchange = () => {
       }
     }
 
-    const duration = 1500
+    const duration = 1250
     const animateStippling = (points, startTime, progress) => {
       const currentTime = performance.now()
       const timeBetweenFrames = currentTime - startTime
       const rate = timeBetweenFrames / duration
       progress += rate
 
+      const cubicRate = cubicBezier(progress) - cubicBezier(progress - rate)
+
       for (let i = 0, n = points.length; i < n; i += 2) {
-        points[i] = points[i] + distances[i] * rate
-        points[i + 1] = points[i + 1] + distances[i + 1] * rate
+        points[i] = points[i] + distances[i] * cubicRate
+        points[i + 1] = points[i + 1] + distances[i + 1] * cubicRate
       }
       drawStippling(points)
 
