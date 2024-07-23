@@ -85,9 +85,9 @@ fileBtn.onchange = () => {
       }
     }
 
-    const { x, y } = cubic(1, 0, 0, 1)
-    
-    const cubicBezier = (t) => y(t);
+    const { y } = cubic(1, 0, 0, 1)
+
+    const cubicBezier = (t) => y(t)
 
     const drawStippling = (points) => {
       context.clearRect(0, 0, width, height)
