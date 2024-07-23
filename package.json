@@ -18,6 +18,7 @@
     "vite": "^4.4.0"
   },
   "dependencies": {
-    "d3-delaunay": "^6.0.4"
+    "d3-delaunay": "^6.0.4",
+    "pako": "^2.1.0"
   }
 }

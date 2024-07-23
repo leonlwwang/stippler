@@ -29,6 +29,19 @@
   -webkit-text-size-adjust: 100%;
 }
 
+#export-text {
+  font-family: 'IBM Plex Mono', Inter, Avenir, Helvetica, Arial, sans-serif;
+  color: #1a1a1a;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.5s;
+}
+
+#export-text:hover {
+  color: white;
+  transition-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  transition-duration: 0.5s;
+}
+
 #image-form {
   padding: 1rem;
   display: flex;
@@ -115,7 +128,8 @@ svg:hover {
   margin-right: auto;
 }
 
-label {
+label,
+#export-btn {
   font-size: 0.75rem;
   padding-top: 0.1rem;
   padding-bottom: 0.1rem;
@@ -139,7 +153,9 @@ label {
   transition-duration: 0.5s;
 }
 
-label:hover {
+label:hover,
+#export-btn:hover {
+  cursor: pointer;
   color: white;
   transition-property: all;
   background-position: -100% 0;
@@ -237,4 +253,17 @@ p {
   button {
     background-color: #f9f9f9;
   }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
 }
