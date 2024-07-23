@@ -1,7 +1,9 @@
 import './global.css'
 import { cubic } from './cubic'
+import { deflate } from 'pako'
 
 let REPLAY = false
+let EXPORT = false
 
 const fileBtn = document.getElementById('file-btn')
 const imgForm = document.getElementById('image-form')
@@ -17,19 +19,19 @@ fileBtn.onchange = () => {
     image.src = reader.result
   }
 
-  const handle = document.getElementById('handle')
+  const exportBtn = document.getElementById('export-btn')
 
   const loader = document.createElement('div')
   loader.className = 'loader'
   const wrapper = document.createElement('div')
   wrapper.className = 'wrapper'
   wrapper.appendChild(loader)
-  document.body.insertBefore(wrapper, handle)
+  document.body.insertBefore(wrapper, exportBtn)
 
   const stippler = document.createElement('canvas')
   stippler.id = 'stippler'
   stippler.style.display = 'none'
-  document.body.insertBefore(stippler, handle)
+  document.body.insertBefore(stippler, exportBtn)
   const canvas = document.getElementById('stippler')
   const context = canvas.getContext('2d', { willReadFrequently: true })
 
@@ -75,7 +77,7 @@ fileBtn.onchange = () => {
         const report = document.createElement('p')
         report.textContent =
           distances.length + points.length + ' points generated in ' + (end - start) / 1000 + ' sec'
-        document.body.insertBefore(report, handle)
+        document.body.insertBefore(report, exportBtn)
 
         stippler.style.display = 'block'
 
@@ -118,8 +120,28 @@ fileBtn.onchange = () => {
         requestAnimationFrame(() => animateStippling(points, currentTime, progress))
       } else {
         console.log('animation completed')
+        !EXPORT && createExport(points)
+        EXPORT = true
         REPLAY = true
       }
+    }
+
+    const createExport = (points) => {
+      const compressed = deflate(points)
+      const blob = new Blob([compressed], { type: 'application/octet-stream' })
+
+      exportBtn.style.opacity = 0
+      exportBtn.classList.add('fade-in')
+      exportBtn.style.opacity = 1
+
+      exportBtn.addEventListener('click', () => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'stippling.bin'
+        a.click()
+        URL.revokeObjectURL(url)
+      })
     }
 
     const replayHandler = (event) => {
